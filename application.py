@@ -43,7 +43,8 @@ def get_feature_names(scaler) -> List[str]:
     return [f"feature_{i+1}" for i in range(n_features)]
 
 
-app = Flask(__name__, template_folder=os.path.join(APP_ROOT, "templates"))
+application = Flask(__name__, template_folder=os.path.join(APP_ROOT, "templates"))
+app=application
 
 try:
     model, scaler = load_artifacts()
