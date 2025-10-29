@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forest Fire Prediction</title>
+  <style>
+    :root { --bg: #0b1220; --panel: #121b2e; --text: #e7ecf3; --muted: #8ea0bf; --primary: #4f8cff; --danger: #ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: linear-gradient(180deg, #0b1220, #0e1626 60%); color: var(--text); }
+    .container { max-width: 960px; margin: 0 auto; padding: 24px; }
+    header { padding: 24px 0 8px; }
+    h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
+    p.subtitle { margin: 0; color: var(--muted); }
+
+    .panel { margin-top: 24px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
+
+    form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 12px; letter-spacing: 0.3px; color: var(--muted); }
+    input[type="number"] { background: #0f1729; border: 1px solid rgba(255,255,255,0.08); color: var(--text); border-radius: 8px; padding: 10px 12px; outline: none; transition: border-color .15s ease; }
+    input[type="number"]:focus { border-color: var(--primary); }
+
+    .actions { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; justify-content: flex-start; margin-top: 6px; }
+    button { appearance: none; border: none; background: var(--primary); color: white; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform .05s ease, filter .15s ease; }
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+
+    .error { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: #ffd7d7; }
+    .result { margin-top: 12px; padding: 14px 16px; border-radius: 10px; background: rgba(79,140,255,0.08); border: 1px solid rgba(79,140,255,0.3); font-size: 16px; }
+    code { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; }
+    footer { margin: 28px 0; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Forest Fire Prediction</h1>
+      <p class="subtitle">Enter the input features below and submit to get a prediction.</p>
+    </header>
+
+    <div class="panel">
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      {% if raw_feature_names and raw_feature_names|length > 0 %}
+      <form method="POST" action="{{ url_for('predict_form') }}">
+        {% for name in raw_feature_names %}
+        <div class="field">
+          <label for="{{ name }}">{{ name }}</label>
+          {% if name == 'Classes' %}
+            <select id="{{ name }}" name="{{ name }}" required>
+              <option value="" disabled selected>Select class</option>
+              <option value="0">Not fire (0)</option>
+              <option value="1">Fire (1)</option>
+            </select>
+          {% elif name == 'region' %}
+            <select id="{{ name }}" name="{{ name }}" required>
+              <option value="" disabled selected>Select region</option>
+              {% for opt in region_options %}
+                <option value="{{ opt.value }}">{{ opt.label }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="number" step="any" id="{{ name }}" name="{{ name }}" placeholder="{{ suggested_defaults.get(name, '') }}" required />
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div class="actions">
+          <button type="submit">Predict</button>
+          
+        </div>
+      </form>
+      {% else %}
+      <p class="subtitle">Model/scaler not loaded. Ensure files exist at <code>models/ridge_regressor_model.pkl</code> and <code>models/scaler.pkl</code>.</p>
+      {% endif %}
+
+      {% if prediction is not none %}
+      <div class="result">
+        <strong>Prediction:</strong> {{ '%.4f'|format(prediction) }}
+      </div>
+      {% endif %}
+    </div>
+
+    <footer>
+    
+    </footer>
+  </div>
+</body>
+</html>
